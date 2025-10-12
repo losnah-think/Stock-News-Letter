@@ -42,6 +42,9 @@ interface AnalysisResult {
   debtToEquity: number;
   epsGrowthYoY: number;
   news?: NewsArticle[];
+  generatedAt?: string;
+  fromCache?: boolean;
+  cachedAt?: string;
 }
 
 interface NewsArticle {
@@ -103,6 +106,9 @@ export default function Home() {
         debtToEquity: data.financialData.debtToEquity,
         epsGrowthYoY: data.financialData.epsGrowthYoY,
         news: data.news || [],
+        generatedAt: data.generatedAt,
+        fromCache: data.fromCache,
+        cachedAt: data.cachedAt,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : '분석 중 오류가 발생했습니다');
@@ -483,11 +489,30 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Data Source */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              {/* Data Source & Timestamp */}
+              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                 <p className="text-xs text-gray-500">
                   📊 데이터 출처: Yahoo Finance API | 분석: OpenAI GPT-4 | 공시: SEC EDGAR
                 </p>
+                {analysis.generatedAt && (
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-gray-700">
+                      🕐 분석 기준 시간: {new Date(analysis.generatedAt).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      })}
+                    </p>
+                    {analysis.fromCache && (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded">
+                        캐시됨 ⚡
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
