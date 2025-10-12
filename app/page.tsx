@@ -250,7 +250,7 @@ export default function Home() {
                     {analysis.ticker}
                   </h2>
                   <div className="text-3xl sm:text-4xl font-bold text-gray-900">
-                    ${analysis.currentPrice.toFixed(2)}
+                    ${analysis.currentPrice?.toFixed(2) || 'N/A'}
                   </div>
                 </div>
                 <div className={`px-4 py-2 rounded-lg font-bold text-sm sm:text-base ${getDecisionColor(analysis.decision)} self-start`}>
@@ -299,7 +299,9 @@ export default function Home() {
                       <span>P/E 비율</span>
                       <span className="text-[10px] text-purple-600">📈 밸류에이션</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-purple-900 mb-1">{analysis.pe.toFixed(1)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-purple-900 mb-1">
+                      {analysis.pe ? analysis.pe.toFixed(1) : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-purple-700">업종 평균과 비교 필요</div>
                   </div>
                   
@@ -309,7 +311,9 @@ export default function Home() {
                       <span>Forward P/E</span>
                       <span className="text-[10px] text-violet-600">🔮 미래가치</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-violet-900 mb-1">{analysis.forwardPE.toFixed(1)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-violet-900 mb-1">
+                      {analysis.forwardPE ? analysis.forwardPE.toFixed(1) : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-violet-700">미래 실적 기대치</div>
                   </div>
                   
@@ -320,7 +324,7 @@ export default function Home() {
                       <span className="text-[10px] text-indigo-600">💰 규모</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-indigo-900 mb-1">
-                      ${(analysis.marketCap / 1e9).toFixed(1)}B
+                      {analysis.marketCap ? `$${(analysis.marketCap / 1e9).toFixed(1)}B` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-indigo-700">기업 가치 총액</div>
                   </div>
@@ -342,7 +346,7 @@ export default function Home() {
                       <span className="text-[10px] text-green-600">📈 성장성</span>
                     </div>
                     <div className="text-xl sm:text-2xl font-bold text-green-900 mb-1">
-                      {analysis.revenueGrowthYoY > 0 ? '+' : ''}{analysis.revenueGrowthYoY.toFixed(1)}%
+                      {analysis.revenueGrowthYoY != null ? `${analysis.revenueGrowthYoY > 0 ? '+' : ''}${analysis.revenueGrowthYoY.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-green-700">전년 동기 대비</div>
                   </div>
@@ -354,7 +358,7 @@ export default function Home() {
                       <span className="text-[10px] text-emerald-600">📊 분기성장</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-emerald-900 mb-1">
-                      {analysis.revenueGrowthQoQ > 0 ? '+' : ''}{analysis.revenueGrowthQoQ.toFixed(1)}%
+                      {analysis.revenueGrowthQoQ != null ? `${analysis.revenueGrowthQoQ > 0 ? '+' : ''}${analysis.revenueGrowthQoQ.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-emerald-700">직전 분기 대비</div>
                   </div>
@@ -366,7 +370,7 @@ export default function Home() {
                       <span className="text-[10px] text-teal-600">💵 수익성</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-teal-900 mb-1">
-                      {analysis.netIncomeGrowthYoY > 0 ? '+' : ''}{analysis.netIncomeGrowthYoY.toFixed(1)}%
+                      {analysis.netIncomeGrowthYoY != null ? `${analysis.netIncomeGrowthYoY > 0 ? '+' : ''}${analysis.netIncomeGrowthYoY.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-teal-700">전년 동기 대비</div>
                   </div>
@@ -378,7 +382,7 @@ export default function Home() {
                       <span className="text-[10px] text-cyan-600">💰 분기수익</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-cyan-900 mb-1">
-                      {analysis.netIncomeGrowthQoQ > 0 ? '+' : ''}{analysis.netIncomeGrowthQoQ.toFixed(1)}%
+                      {analysis.netIncomeGrowthQoQ != null ? `${analysis.netIncomeGrowthQoQ > 0 ? '+' : ''}${analysis.netIncomeGrowthQoQ.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-cyan-700">직전 분기 대비</div>
                   </div>
@@ -390,7 +394,7 @@ export default function Home() {
                       <span className="text-[10px] text-lime-600">📊 주당순이익</span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-lime-900 mb-1">
-                      {analysis.epsGrowthYoY > 0 ? '+' : ''}{analysis.epsGrowthYoY.toFixed(1)}%
+                      {analysis.epsGrowthYoY != null ? `${analysis.epsGrowthYoY > 0 ? '+' : ''}${analysis.epsGrowthYoY.toFixed(1)}%` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-lime-700">주주 가치 증가율</div>
                   </div>
@@ -401,7 +405,9 @@ export default function Home() {
                       <span>매출총이익률</span>
                       <span className="text-[10px] text-amber-600">💎 원가효율</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-amber-900 mb-1">{analysis.grossMargin.toFixed(1)}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-amber-900 mb-1">
+                      {analysis.grossMargin != null ? `${analysis.grossMargin.toFixed(1)}%` : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-amber-700">매출-원가 마진</div>
                   </div>
                   
@@ -411,7 +417,9 @@ export default function Home() {
                       <span>영업이익률</span>
                       <span className="text-[10px] text-yellow-600">🏭 영업효율</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-yellow-900 mb-1">{analysis.operatingMargin.toFixed(1)}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-900 mb-1">
+                      {analysis.operatingMargin != null ? `${analysis.operatingMargin.toFixed(1)}%` : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-yellow-700">핵심 사업 수익성</div>
                   </div>
                   
@@ -421,7 +429,9 @@ export default function Home() {
                       <span>순이익률</span>
                       <span className="text-[10px] text-orange-600">✨ 최종수익</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-orange-900 mb-1">{analysis.netMargin.toFixed(1)}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-orange-900 mb-1">
+                      {analysis.netMargin != null ? `${analysis.netMargin.toFixed(1)}%` : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-orange-700">세후 순이익 비율</div>
                   </div>
                   
@@ -431,7 +441,9 @@ export default function Home() {
                       <span>ROE</span>
                       <span className="text-[10px] text-rose-600">👥 자본효율</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-rose-900 mb-1">{analysis.roe.toFixed(1)}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-rose-900 mb-1">
+                      {analysis.roe != null ? `${analysis.roe.toFixed(1)}%` : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-rose-700">자기자본이익률</div>
                   </div>
                   
@@ -441,7 +453,9 @@ export default function Home() {
                       <span>부채비율</span>
                       <span className="text-[10px] text-pink-600">⚖️ 재무건전성</span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-pink-900 mb-1">{analysis.debtToEquity.toFixed(2)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-pink-900 mb-1">
+                      {analysis.debtToEquity != null ? analysis.debtToEquity.toFixed(2) : 'N/A'}
+                    </div>
                     <div className="text-[10px] text-pink-700">낮을수록 안정적</div>
                   </div>
                   

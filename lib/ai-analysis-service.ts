@@ -33,7 +33,7 @@ export class AIAnalysisService {
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o-mini', // Faster and cheaper than gpt-4-turbo-preview
         messages: [
           {
             role: 'system',
@@ -47,7 +47,7 @@ export class AIAnalysisService {
           }
         ],
         temperature: 0.3,
-        max_tokens: 2000,
+        max_tokens: 1500, // Reduced from 2000 for faster response
       });
 
       const analysis = response.choices[0].message.content || '';
