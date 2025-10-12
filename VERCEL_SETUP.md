@@ -21,15 +21,23 @@ OPENAI_API_KEY=your_openai_api_key_here
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASSWORD=your_gmail_app_password
 
+# Cron Job 보안 키 (임의의 문자열)
+CRON_SECRET=your_random_secret_key_here
+```
+
+### 선택사항 (Cron Job으로 자동 알림 받으려면)
+
+Cron Job을 통해 특정 종목들을 자동으로 모니터링하고 싶다면 추가:
+
+```bash
 # 알림 받을 이메일 주소 (쉼표로 구분)
 NOTIFICATION_EMAIL=chlrkfka111@naver.com,thor.choi@sotatek.com
 
 # 모니터링할 주식 티커 (쉼표로 구분)
 STOCK_TICKERS=NVDA,TSLA,AAPL
-
-# Cron Job 보안 키 (임의의 문자열)
-CRON_SECRET=your_random_secret_key_here
 ```
+
+⚠️ **참고**: 웹사이트에서 개별 종목 검색 및 이메일 구독 기능을 사용할 수 있으므로, 위 환경 변수는 선택사항입니다.
 
 ### Gmail 앱 비밀번호 생성 방법
 
@@ -119,17 +127,19 @@ Authorization: Bearer your_cron_secret_here
 - 진입가 입력 → 수익률 자동 계산
 - AI 기반 투자 의견 (매수/보유/매도)
 - 연관 뉴스 표시
+- **개별 종목 이메일 구독 기능**
 
 ### 📧 이메일 알림
+- 웹사이트에서 원하는 종목 검색 후 이메일 구독
+- 또는 환경 변수로 자동 모니터링 설정 가능
 - SEC 공시 발견 시 자동 발송
 - GPT-4 기반 상세 분석
 - 재무 지표 분석
 - 투자 의견 및 신뢰도
 
-### 🔍 모니터링 종목
-- NVDA (엔비디아)
-- TSLA (테슬라)
-- AAPL (애플)
+### 🔍 사용 방법
+1. **개별 구독**: 웹사이트에서 티커 검색 → 이메일 입력 → 구독
+2. **자동 모니터링** (선택): 환경 변수로 `STOCK_TICKERS`, `NOTIFICATION_EMAIL` 설정
 
 ## 9. 문제 해결
 
@@ -164,7 +174,11 @@ NOTIFICATION_EMAIL=email1@example.com,email2@example.com,email3@example.com
 
 배포가 완료되면:
 - 웹사이트: `https://your-project.vercel.app`
-- 자동 공시 체크: 3시간마다
+- 자동 공시 체크: 매일 오전 9시 (월~토)
 - 이메일 알림: 공시 발견 시 자동 발송
+
+### 이메일 구독 방법
+1. **개별 구독** (추천): 웹사이트에서 원하는 종목 검색 → 이메일 입력 → 구독 버튼 클릭
+2. **자동 모니터링**: Vercel 환경 변수에 `STOCK_TICKERS`와 `NOTIFICATION_EMAIL` 설정
 
 문제가 있으면 Vercel Functions 로그를 확인하세요!
