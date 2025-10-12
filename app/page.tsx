@@ -29,8 +29,18 @@ interface AnalysisResult {
   opportunities: string[];
   targetPrice?: number;
   revenueGrowthYoY: number;
+  revenueGrowthQoQ: number;
+  netIncomeGrowthYoY: number;
+  netIncomeGrowthQoQ: number;
   netMargin: number;
+  grossMargin: number;
+  operatingMargin: number;
   pe: number;
+  forwardPE: number;
+  marketCap: number;
+  roe: number;
+  debtToEquity: number;
+  epsGrowthYoY: number;
   news?: NewsArticle[];
 }
 
@@ -80,8 +90,18 @@ export default function Home() {
         opportunities: data.recommendation.opportunities || [],
         targetPrice: data.recommendation.targetPrice,
         revenueGrowthYoY: data.financialData.revenueGrowthYoY,
+        revenueGrowthQoQ: data.financialData.revenueGrowthQoQ,
+        netIncomeGrowthYoY: data.financialData.netIncomeGrowthYoY,
+        netIncomeGrowthQoQ: data.financialData.netIncomeGrowthQoQ,
         netMargin: data.financialData.netMargin,
+        grossMargin: data.financialData.grossMargin,
+        operatingMargin: data.financialData.operatingMargin,
         pe: data.financialData.pe,
+        forwardPE: data.financialData.forwardPE,
+        marketCap: data.financialData.marketCap,
+        roe: data.financialData.roe,
+        debtToEquity: data.financialData.debtToEquity,
+        epsGrowthYoY: data.financialData.epsGrowthYoY,
         news: data.news || [],
       });
     } catch (err) {
@@ -146,7 +166,7 @@ export default function Home() {
     switch (decision) {
       case 'STRONG_BUY': return '적극 매수';
       case 'BUY': return '매수';
-      case 'HOLD': return '보유';
+      case 'HOLD': return '관망';
       case 'SELL': return '매도';
       case 'STRONG_SELL': return '적극 매도';
       default: return decision;
@@ -267,19 +287,175 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Key Metrics */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
-                <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-xs font-semibold text-blue-900 mb-1">신뢰도</div>
-                  <div className="text-xl sm:text-2xl font-bold text-blue-900">{analysis.confidence}%</div>
+              {/* Key Metrics Grid - 주요 재무 지표 */}
+              <div className="mb-6">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3">📊 주요 재무 지표</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                  
+                  {/* P/E 비율 */}
+                  <div className="p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="text-xs font-semibold text-purple-900 mb-1 flex items-center justify-between">
+                      <span>P/E 비율</span>
+                      <span className="text-[10px] text-purple-600">📈 밸류에이션</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-purple-900 mb-1">{analysis.pe.toFixed(1)}</div>
+                    <div className="text-[10px] text-purple-700">업종 평균과 비교 필요</div>
+                  </div>
+                  
+                  {/* Forward P/E */}
+                  <div className="p-3 sm:p-4 bg-violet-50 rounded-lg border border-violet-200">
+                    <div className="text-xs font-semibold text-violet-900 mb-1 flex items-center justify-between">
+                      <span>Forward P/E</span>
+                      <span className="text-[10px] text-violet-600">🔮 미래가치</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-violet-900 mb-1">{analysis.forwardPE.toFixed(1)}</div>
+                    <div className="text-[10px] text-violet-700">미래 실적 기대치</div>
+                  </div>
+                  
+                  {/* 시가총액 */}
+                  <div className="p-3 sm:p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <div className="text-xs font-semibold text-indigo-900 mb-1 flex items-center justify-between">
+                      <span>시가총액</span>
+                      <span className="text-[10px] text-indigo-600">💰 규모</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-indigo-900 mb-1">
+                      ${(analysis.marketCap / 1e9).toFixed(1)}B
+                    </div>
+                    <div className="text-[10px] text-indigo-700">기업 가치 총액</div>
+                  </div>
+                  
+                  {/* AI 신뢰도 */}
+                  <div className="p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="text-xs font-semibold text-blue-900 mb-1 flex items-center justify-between">
+                      <span>AI 신뢰도</span>
+                      <span className="text-[10px] text-blue-600">🤖 분석</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-900 mb-1">{analysis.confidence}%</div>
+                    <div className="text-[10px] text-blue-700">투자의견 확신도</div>
+                  </div>
+                  
+                  {/* 매출 성장 (YoY) */}
+                  <div className="p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-xs font-semibold text-green-900 mb-1 flex items-center justify-between">
+                      <span>매출 성장 (YoY)</span>
+                      <span className="text-[10px] text-green-600">📈 성장성</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-900 mb-1">
+                      {analysis.revenueGrowthYoY > 0 ? '+' : ''}{analysis.revenueGrowthYoY.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-green-700">전년 동기 대비</div>
+                  </div>
+                  
+                  {/* 매출 성장 (QoQ) */}
+                  <div className="p-3 sm:p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <div className="text-xs font-semibold text-emerald-900 mb-1 flex items-center justify-between">
+                      <span>매출 성장 (QoQ)</span>
+                      <span className="text-[10px] text-emerald-600">📊 분기성장</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-emerald-900 mb-1">
+                      {analysis.revenueGrowthQoQ > 0 ? '+' : ''}{analysis.revenueGrowthQoQ.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-emerald-700">직전 분기 대비</div>
+                  </div>
+                  
+                  {/* 순이익 성장 (YoY) */}
+                  <div className="p-3 sm:p-4 bg-teal-50 rounded-lg border border-teal-200">
+                    <div className="text-xs font-semibold text-teal-900 mb-1 flex items-center justify-between">
+                      <span>순이익 성장 (YoY)</span>
+                      <span className="text-[10px] text-teal-600">💵 수익성</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-teal-900 mb-1">
+                      {analysis.netIncomeGrowthYoY > 0 ? '+' : ''}{analysis.netIncomeGrowthYoY.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-teal-700">전년 동기 대비</div>
+                  </div>
+                  
+                  {/* 순이익 성장 (QoQ) */}
+                  <div className="p-3 sm:p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+                    <div className="text-xs font-semibold text-cyan-900 mb-1 flex items-center justify-between">
+                      <span>순이익 성장 (QoQ)</span>
+                      <span className="text-[10px] text-cyan-600">💰 분기수익</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-cyan-900 mb-1">
+                      {analysis.netIncomeGrowthQoQ > 0 ? '+' : ''}{analysis.netIncomeGrowthQoQ.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-cyan-700">직전 분기 대비</div>
+                  </div>
+                  
+                  {/* EPS 성장 */}
+                  <div className="p-3 sm:p-4 bg-lime-50 rounded-lg border border-lime-200">
+                    <div className="text-xs font-semibold text-lime-900 mb-1 flex items-center justify-between">
+                      <span>EPS 성장 (YoY)</span>
+                      <span className="text-[10px] text-lime-600">📊 주당순이익</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-bold text-lime-900 mb-1">
+                      {analysis.epsGrowthYoY > 0 ? '+' : ''}{analysis.epsGrowthYoY.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-lime-700">주주 가치 증가율</div>
+                  </div>
+                  
+                  {/* 매출총이익률 */}
+                  <div className="p-3 sm:p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="text-xs font-semibold text-amber-900 mb-1 flex items-center justify-between">
+                      <span>매출총이익률</span>
+                      <span className="text-[10px] text-amber-600">💎 원가효율</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-amber-900 mb-1">{analysis.grossMargin.toFixed(1)}%</div>
+                    <div className="text-[10px] text-amber-700">매출-원가 마진</div>
+                  </div>
+                  
+                  {/* 영업이익률 */}
+                  <div className="p-3 sm:p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="text-xs font-semibold text-yellow-900 mb-1 flex items-center justify-between">
+                      <span>영업이익률</span>
+                      <span className="text-[10px] text-yellow-600">🏭 영업효율</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-900 mb-1">{analysis.operatingMargin.toFixed(1)}%</div>
+                    <div className="text-[10px] text-yellow-700">핵심 사업 수익성</div>
+                  </div>
+                  
+                  {/* 순이익률 */}
+                  <div className="p-3 sm:p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <div className="text-xs font-semibold text-orange-900 mb-1 flex items-center justify-between">
+                      <span>순이익률</span>
+                      <span className="text-[10px] text-orange-600">✨ 최종수익</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-orange-900 mb-1">{analysis.netMargin.toFixed(1)}%</div>
+                    <div className="text-[10px] text-orange-700">세후 순이익 비율</div>
+                  </div>
+                  
+                  {/* ROE */}
+                  <div className="p-3 sm:p-4 bg-rose-50 rounded-lg border border-rose-200">
+                    <div className="text-xs font-semibold text-rose-900 mb-1 flex items-center justify-between">
+                      <span>ROE</span>
+                      <span className="text-[10px] text-rose-600">👥 자본효율</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-rose-900 mb-1">{analysis.roe.toFixed(1)}%</div>
+                    <div className="text-[10px] text-rose-700">자기자본이익률</div>
+                  </div>
+                  
+                  {/* 부채비율 */}
+                  <div className="p-3 sm:p-4 bg-pink-50 rounded-lg border border-pink-200">
+                    <div className="text-xs font-semibold text-pink-900 mb-1 flex items-center justify-between">
+                      <span>부채비율</span>
+                      <span className="text-[10px] text-pink-600">⚖️ 재무건전성</span>
+                    </div>
+                    <div className="text-xl sm:text-2xl font-bold text-pink-900 mb-1">{analysis.debtToEquity.toFixed(2)}</div>
+                    <div className="text-[10px] text-pink-700">낮을수록 안정적</div>
+                  </div>
+                  
                 </div>
-                <div className="p-3 sm:p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="text-xs font-semibold text-purple-900 mb-1">P/E 비율</div>
-                  <div className="text-xl sm:text-2xl font-bold text-purple-900">{analysis.pe.toFixed(1)}</div>
-                </div>
-                <div className="p-3 sm:p-4 bg-green-50 rounded-lg border border-green-200 col-span-2 sm:col-span-1">
-                  <div className="text-xs font-semibold text-green-900 mb-1">매출 성장</div>
-                  <div className="text-xl sm:text-2xl font-bold text-green-900">+{analysis.revenueGrowthYoY.toFixed(1)}%</div>
+                
+                {/* 지표 설명 */}
+                <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    <strong className="text-gray-900">💡 지표 해석 가이드:</strong><br/>
+                    • <strong>YoY (Year-over-Year)</strong>: 전년 동기 대비 성장률 - 장기 트렌드 파악<br/>
+                    • <strong>QoQ (Quarter-over-Quarter)</strong>: 직전 분기 대비 성장률 - 최근 모멘텀 확인<br/>
+                    • <strong>마진율</strong>: 높을수록 수익성 우수 (업종별 차이 고려 필요)<br/>
+                    • <strong>ROE</strong>: 15% 이상이면 우수, 자본 대비 수익 창출 능력<br/>
+                    • <strong>부채비율</strong>: 업종마다 다르지만 일반적으로 1.0 이하가 안정적
+                  </p>
                 </div>
               </div>
 
