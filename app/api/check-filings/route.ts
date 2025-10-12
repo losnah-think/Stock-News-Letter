@@ -79,9 +79,9 @@ async function checkFilings(ticker: string) {
   const financialService = new FinancialDataService();
   const aiService = new AIAnalysisService(process.env.OPENAI_API_KEY || '');
 
-  // Check for new filings in the last 3 hours
+  // Check for new filings in the last 24 hours
   console.log(`Checking for new filings for ${ticker}...`);
-  const recentFilingsResult = await secService.hasNewFilings(ticker, 0.125); // 3 hours
+  const recentFilingsResult = await secService.hasNewFilings(ticker, 1); // 24 hours
 
   if (!recentFilingsResult.hasNew) {
     console.log(`No new filings for ${ticker}`);
