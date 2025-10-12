@@ -164,17 +164,17 @@ export default function Home() {
 
   const getDecisionText = (decision: string) => {
     switch (decision) {
-      case 'STRONG_BUY': return '적극 매수';
-      case 'BUY': return '매수';
-      case 'HOLD': return '관망';
-      case 'SELL': return '매도';
-      case 'STRONG_SELL': return '적극 매도';
+      case 'STRONG_BUY': return '적극 매수 권장';
+      case 'BUY': return '매수 추천';
+      case 'HOLD': return '보유 권장';
+      case 'SELL': return '매도 고려';
+      case 'STRONG_SELL': return '적극 매도 권장';
       default: return decision;
     }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-300 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
@@ -190,6 +190,7 @@ export default function Home() {
         </div>
       </header>
 
+      <main className="flex-1">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Search Section */}
         <div className="mb-8 sm:mb-12">
@@ -635,15 +636,16 @@ export default function Home() {
           </div>
         )}
       </div>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-300 mt-12 sm:mt-20 bg-white">
+      <footer className="border-t border-gray-300 bg-white mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 text-center text-xs sm:text-sm text-gray-700">
           <p className="font-medium">본 분석은 정보 제공 목적으로만 제공되며 투자 권유가 아닙니다.</p>
           <p className="mt-1">투자 결정 시 반드시 본인의 판단과 추가 조사를 병행하시기 바랍니다.</p>
           <p className="mt-2 text-gray-500">© 2025 SNL - Stock News Letter</p>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
