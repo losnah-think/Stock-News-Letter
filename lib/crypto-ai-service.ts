@@ -13,6 +13,14 @@ interface CryptoAIAnalysis {
   risks: string[];
   targetPrice: number | null;
   timeHorizon: string;
+  investmentLevels: {
+    entryPrice: number;      // 진입가 (현재가 기준)
+    targetPrice1: number;     // 1차 목표가 (5-10% 수익)
+    targetPrice2: number;     // 2차 목표가 (15-25% 수익)
+    targetPrice3: number;     // 3차 목표가 (30-50% 수익)
+    stopLoss: number;         // 손절가 (5-10% 손실)
+    reasoning: string;        // 가격 설정 근거
+  };
 }
 
 export class CryptoAIService {
@@ -53,7 +61,7 @@ export class CryptoAIService {
       });
 
       const content = response.choices[0].message.content || '';
-      return this.parseAIResponse(content);
+      return this.parseAIResponse(content, cryptoData.price);
     } catch (error: any) {
       console.error('AI 분석 실패:', error.message);
       throw new Error('AI 분석을 수행할 수 없습니다.');
@@ -116,18 +124,27 @@ RISKS:
 TARGET_PRICE: [숫자만, 없으면 NULL]
 TIME_HORIZON: [단기(1-7일)/중기(1-3개월)/장기(6개월+)]
 
+INVESTMENT_LEVELS:
+ENTRY: [현재가, 숫자만]
+TARGET1: [1차 목표가, 5-10% 수익, 숫자만]
+TARGET2: [2차 목표가, 15-25% 수익, 숫자만]
+TARGET3: [3차 목표가, 30-50% 수익, 숫자만]
+STOPLOSS: [손절가, 5-10% 손실, 숫자만]
+LEVELS_REASONING: [가격대 설정 근거, 1-2문장]
+
 **중요**: 
 1. 암호화폐는 매우 변동성이 크므로 신중한 의견을 제시하세요.
 2. 투자 권유가 아닌 분석 의견임을 명확히 하세요.
 3. 리스크를 반드시 강조하세요.
 4. 한국 투자자 관점에서 설명하세요.
+5. 투자 가격대는 기술적 지표와 최근 추세를 고려하여 현실적으로 설정하세요.
 `;
   }
 
   /**
    * AI 응답 파싱
    */
-  private parseAIResponse(content: string): CryptoAIAnalysis {
+  private parseAIResponse(content: string, currentPrice: number): CryptoAIAnalysis {
     const lines = content.split('\n').filter(line => line.trim());
     
     let decision: any = 'HOLD';
@@ -137,6 +154,14 @@ TIME_HORIZON: [단기(1-7일)/중기(1-3개월)/장기(6개월+)]
     let risks: string[] = [];
     let targetPrice: number | null = null;
     let timeHorizon = '중기';
+    
+    // 투자 가격대
+    let entryPrice = currentPrice;
+    let targetPrice1: number | null = null;
+    let targetPrice2: number | null = null;
+    let targetPrice3: number | null = null;
+    let stopLoss: number | null = null;
+    let levelsReasoning = '';
 
     let currentSection = '';
 
@@ -170,6 +195,25 @@ TIME_HORIZON: [단기(1-7일)/중기(1-3개월)/장기(6개월+)]
         }
       } else if (trimmed.startsWith('TIME_HORIZON:')) {
         timeHorizon = trimmed.replace('TIME_HORIZON:', '').trim();
+      } else if (trimmed.startsWith('INVESTMENT_LEVELS:')) {
+        currentSection = 'investmentLevels';
+      } else if (trimmed.startsWith('ENTRY:')) {
+        const value = parseFloat(trimmed.replace('ENTRY:', '').trim().replace(/[^0-9.]/g, ''));
+        if (!isNaN(value)) entryPrice = value;
+      } else if (trimmed.startsWith('TARGET1:')) {
+        const value = parseFloat(trimmed.replace('TARGET1:', '').trim().replace(/[^0-9.]/g, ''));
+        if (!isNaN(value)) targetPrice1 = value;
+      } else if (trimmed.startsWith('TARGET2:')) {
+        const value = parseFloat(trimmed.replace('TARGET2:', '').trim().replace(/[^0-9.]/g, ''));
+        if (!isNaN(value)) targetPrice2 = value;
+      } else if (trimmed.startsWith('TARGET3:')) {
+        const value = parseFloat(trimmed.replace('TARGET3:', '').trim().replace(/[^0-9.]/g, ''));
+        if (!isNaN(value)) targetPrice3 = value;
+      } else if (trimmed.startsWith('STOPLOSS:')) {
+        const value = parseFloat(trimmed.replace('STOPLOSS:', '').trim().replace(/[^0-9.]/g, ''));
+        if (!isNaN(value)) stopLoss = value;
+      } else if (trimmed.startsWith('LEVELS_REASONING:')) {
+        levelsReasoning = trimmed.replace('LEVELS_REASONING:', '').trim();
       } else if (trimmed.startsWith('-')) {
         const point = trimmed.substring(1).trim();
         if (currentSection === 'keyPoints') {
@@ -189,7 +233,15 @@ TIME_HORIZON: [단기(1-7일)/중기(1-3개월)/장기(6개월+)]
       keyPoints: keyPoints.length > 0 ? keyPoints : ['추가 분석 필요'],
       risks: risks.length > 0 ? risks : ['높은 변동성', '규제 리스크'],
       targetPrice,
-      timeHorizon
+      timeHorizon,
+      investmentLevels: {
+        entryPrice,
+        targetPrice1: targetPrice1 || currentPrice * 1.07,
+        targetPrice2: targetPrice2 || currentPrice * 1.20,
+        targetPrice3: targetPrice3 || currentPrice * 1.40,
+        stopLoss: stopLoss || currentPrice * 0.93,
+        reasoning: levelsReasoning || '기술적 분석을 기반으로 한 가격대입니다.'
+      }
     };
   }
 

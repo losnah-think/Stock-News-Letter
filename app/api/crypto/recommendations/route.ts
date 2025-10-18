@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
       coins: enrichedCoins
     };
 
-    // 캐시 저장 (30분)
-    await cacheService.set(cacheKey, result, 1800);
+    // 캐시 저장 (1시간)
+    await cacheService.set(cacheKey, result, 3600);
 
     return NextResponse.json(result);
 

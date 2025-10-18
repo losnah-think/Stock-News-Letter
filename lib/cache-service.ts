@@ -147,14 +147,14 @@ export class CacheService {
   }
 
   /**
-   * 전체 분석 결과 캐시 (3시간)
+   * 전체 분석 결과 캐시 (6시간)
    */
   async getFullAnalysis(ticker: string) {
     return this.get(`stock:${ticker}:full`);
   }
 
   async setFullAnalysis(ticker: string, data: any) {
-    return this.set(`stock:${ticker}:full`, data, 10800); // 3 hours (3시간 간격 사전 캐싱)
+    return this.set(`stock:${ticker}:full`, data, 21600); // 6 hours
   }
 
   /**

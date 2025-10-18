@@ -58,7 +58,7 @@ export async function GET(
       fromCache: false
     };
 
-    // 캐시 저장 (3시간)
+    // 캐시 저장 (6시간)
     await cacheService.setFullAnalysis(`crypto:${symbol}`, result);
     console.log(`💾 캐시 저장 완료: crypto:${symbol}`);
 

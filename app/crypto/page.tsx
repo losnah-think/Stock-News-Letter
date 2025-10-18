@@ -39,18 +39,18 @@ interface CryptoAnalysis {
     risks: string[];
     targetPrice: number | null;
     timeHorizon: string;
+    investmentLevels: {
+      entryPrice: number;
+      targetPrice1: number;
+      targetPrice2: number;
+      targetPrice3: number;
+      stopLoss: number;
+      reasoning: string;
+    };
   };
   generatedAt: string;
   fromCache: boolean;
   cachedAt?: string;
-}
-
-interface Recommendations {
-  hotPick: any;
-  risingStar: any;
-  safeHaven: any;
-  reasoning: string;
-  disclaimer: string;
 }
 
 interface Prediction {
@@ -66,9 +66,7 @@ export default function CryptoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchSymbol, setSearchSymbol] = useState('');
-  const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
-  const [showRecommendations, setShowRecommendations] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
 
   // 인기 코인
@@ -99,25 +97,26 @@ export default function CryptoPage() {
 
       const data = await response.json();
       setAnalysis(data);
+      
+      // 결과가 로드되면 자동으로 스크롤
+      setTimeout(() => {
+        const resultElement = document.getElementById('analysis-result');
+        if (resultElement) {
+          resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } catch (err: any) {
       setError(err.message);
+      
+      // 에러 발생 시에도 스크롤
+      setTimeout(() => {
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchRecommendations = async () => {
-    setShowRecommendations(true);
-    if (recommendations) return; // 이미 로드됨
-
-    try {
-      const response = await fetch('/api/crypto/recommendations');
-      if (response.ok) {
-        const data = await response.json();
-        setRecommendations(data);
-      }
-    } catch (err) {
-      console.error('추천 로드 실패:', err);
     }
   };
 
@@ -225,113 +224,7 @@ export default function CryptoPage() {
             </div>
           </div>
 
-          {/* 재미 기능 버튼 */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-600 font-medium mb-3">🎲 재미로 보는 기능 (투자 권유 아님!)</p>
-            <div className="flex gap-3">
-              <button
-                onClick={fetchRecommendations}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-xl font-semibold transition-all shadow-lg"
-              >
-                🎯 오늘의 코인 추천
-              </button>
-            </div>
-          </div>
         </div>
-
-        {/* 오늘의 추천 (재미용!) */}
-        {showRecommendations && recommendations && (
-          <div className="bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 rounded-2xl shadow-xl p-6 sm:p-8 border-2 border-orange-200">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">🎯 오늘의 코인 추천</h3>
-              <p className="text-sm text-orange-600 font-semibold bg-orange-100 inline-block px-4 py-2 rounded-full">
-                ⚠️ 재미로만 보세요! 투자 권유 아님!
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-3 gap-4 mb-6">
-              {/* Hot Pick */}
-              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-red-300">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-3xl">🔥</span>
-                  <div>
-                    <p className="text-xs text-red-600 font-bold">HOT PICK</p>
-                    <p className="text-lg font-bold text-gray-800">{recommendations.hotPick.symbol}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700">{recommendations.hotPick.name}</p>
-                <p className="text-2xl font-bold text-red-600 mt-2">
-                  ${recommendations.hotPick.price.toFixed(4)}
-                </p>
-                <p className={`text-sm font-semibold mt-1 ${recommendations.hotPick.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {recommendations.hotPick.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.hotPick.change24h).toFixed(2)}%
-                </p>
-                <button
-                  onClick={() => handleSearch(recommendations.hotPick.symbol)}
-                  className="w-full mt-3 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium"
-                >
-                  상세 분석 보기
-                </button>
-              </div>
-
-              {/* Rising Star */}
-              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-yellow-300">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-3xl">⭐</span>
-                  <div>
-                    <p className="text-xs text-yellow-600 font-bold">RISING STAR</p>
-                    <p className="text-lg font-bold text-gray-800">{recommendations.risingStar.symbol}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700">{recommendations.risingStar.name}</p>
-                <p className="text-2xl font-bold text-yellow-600 mt-2">
-                  ${recommendations.risingStar.price.toFixed(4)}
-                </p>
-                <p className={`text-sm font-semibold mt-1 ${recommendations.risingStar.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {recommendations.risingStar.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.risingStar.change24h).toFixed(2)}%
-                </p>
-                <button
-                  onClick={() => handleSearch(recommendations.risingStar.symbol)}
-                  className="w-full mt-3 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium"
-                >
-                  상세 분석 보기
-                </button>
-              </div>
-
-              {/* Safe Haven */}
-              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-blue-300">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-3xl">🛡️</span>
-                  <div>
-                    <p className="text-xs text-blue-600 font-bold">SAFE HAVEN</p>
-                    <p className="text-lg font-bold text-gray-800">{recommendations.safeHaven.symbol}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-700">{recommendations.safeHaven.name}</p>
-                <p className="text-2xl font-bold text-blue-600 mt-2">
-                  ${recommendations.safeHaven.price.toFixed(4)}
-                </p>
-                <p className={`text-sm font-semibold mt-1 ${recommendations.safeHaven.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {recommendations.safeHaven.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.safeHaven.change24h).toFixed(2)}%
-                </p>
-                <button
-                  onClick={() => handleSearch(recommendations.safeHaven.symbol)}
-                  className="w-full mt-3 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium"
-                >
-                  상세 분석 보기
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl p-5">
-              <p className="text-gray-700 leading-relaxed">{recommendations.reasoning}</p>
-              <p className="text-xs text-gray-500 mt-3 italic">{recommendations.disclaimer}</p>
-              <p className="text-xs text-gray-400 mt-2">
-                생성 시간: {new Date().toLocaleString('ko-KR')}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* 로딩 */}
         {loading && (
@@ -344,7 +237,7 @@ export default function CryptoPage() {
 
         {/* 에러 */}
         {error && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+          <div id="error-message" className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
             <p className="text-red-600 font-semibold">❌ {error}</p>
             <p className="text-sm text-red-500 mt-2">심볼을 확인하고 다시 시도해주세요.</p>
           </div>
@@ -352,7 +245,7 @@ export default function CryptoPage() {
 
         {/* 분석 결과 */}
         {analysis && (
-          <div className="space-y-6">
+          <div id="analysis-result" className="space-y-6">
             {/* 기본 정보 카드 */}
             <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl shadow-xl p-6 sm:p-8 text-white">
               <div className="flex items-start justify-between mb-4">
@@ -414,6 +307,108 @@ export default function CryptoPage() {
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* 투자 가격대 (진입가, 목표가, 손절가) */}
+            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl shadow-xl p-6 sm:p-8 border-2 border-green-300">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">💰 투자 가격대 가이드</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                현재 시장 상황과 기술적 지표를 기반으로 한 참고 가격대입니다
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                {/* 진입가 */}
+                <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🎯</span>
+                    <p className="text-sm font-bold text-blue-600">진입가 (Entry)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-600">
+                    ${analysis.recommendation.investmentLevels.entryPrice.toFixed(6)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    ≈ ₩{(analysis.recommendation.investmentLevels.entryPrice * 1350).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+
+                {/* 손절가 */}
+                <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-red-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🛑</span>
+                    <p className="text-sm font-bold text-red-600">손절가 (Stop Loss)</p>
+                  </div>
+                  <p className="text-3xl font-bold text-red-600">
+                    ${analysis.recommendation.investmentLevels.stopLoss.toFixed(6)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    ≈ ₩{(analysis.recommendation.investmentLevels.stopLoss * 1350).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-red-600 mt-2 font-semibold">
+                    {((analysis.recommendation.investmentLevels.stopLoss / analysis.recommendation.investmentLevels.entryPrice - 1) * 100).toFixed(1)}% 손실 시 청산
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                {/* 1차 목표가 */}
+                <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🎯</span>
+                    <p className="text-xs font-bold text-green-600">1차 목표가</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">
+                    ${analysis.recommendation.investmentLevels.targetPrice1.toFixed(6)}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    ≈ ₩{(analysis.recommendation.investmentLevels.targetPrice1 * 1350).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-green-600 mt-2 font-semibold">
+                    +{((analysis.recommendation.investmentLevels.targetPrice1 / analysis.recommendation.investmentLevels.entryPrice - 1) * 100).toFixed(1)}% 수익
+                  </p>
+                </div>
+
+                {/* 2차 목표가 */}
+                <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-green-300">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🎯🎯</span>
+                    <p className="text-xs font-bold text-green-600">2차 목표가</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">
+                    ${analysis.recommendation.investmentLevels.targetPrice2.toFixed(6)}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    ≈ ₩{(analysis.recommendation.investmentLevels.targetPrice2 * 1350).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-green-600 mt-2 font-semibold">
+                    +{((analysis.recommendation.investmentLevels.targetPrice2 / analysis.recommendation.investmentLevels.entryPrice - 1) * 100).toFixed(1)}% 수익
+                  </p>
+                </div>
+
+                {/* 3차 목표가 */}
+                <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-green-400">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">🎯🎯🎯</span>
+                    <p className="text-xs font-bold text-green-700">3차 목표가</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-700">
+                    ${analysis.recommendation.investmentLevels.targetPrice3.toFixed(6)}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    ≈ ₩{(analysis.recommendation.investmentLevels.targetPrice3 * 1350).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="text-xs text-green-700 mt-2 font-semibold">
+                    +{((analysis.recommendation.investmentLevels.targetPrice3 / analysis.recommendation.investmentLevels.entryPrice - 1) * 100).toFixed(1)}% 수익
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5">
+                <p className="text-sm font-semibold text-gray-700 mb-2">📝 가격대 설정 근거</p>
+                <p className="text-gray-700 leading-relaxed">{analysis.recommendation.investmentLevels.reasoning}</p>
+                <p className="text-xs text-gray-500 mt-4">
+                  ⚠️ 이 가격대는 참고용이며, 실제 투자 시 본인의 판단과 리스크 관리가 중요합니다.
+                </p>
+              </div>
             </div>
 
             {/* AI 투자 의견 */}

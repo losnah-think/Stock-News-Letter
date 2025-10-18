@@ -65,8 +65,8 @@ export async function GET(
       generatedAt: new Date().toISOString()
     };
 
-    // 캐시 저장 (1시간)
-    await cacheService.set(cacheKey, result, 3600);
+    // 캐시 저장 (2시간)
+    await cacheService.set(cacheKey, result, 7200);
 
     return NextResponse.json(result);
 
