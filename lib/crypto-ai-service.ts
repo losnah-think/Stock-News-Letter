@@ -46,10 +46,25 @@ export class CryptoAIService {
         messages: [
           {
             role: 'system',
-            content: `당신은 암호화폐 전문 투자 분석가입니다. 
-데이터를 기반으로 객관적이고 신중한 투자 의견을 제시합니다.
-한국어로 답변하며, 투자자가 이해하기 쉽게 설명합니다.
-암호화폐는 변동성이 크므로 리스크를 명확히 강조합니다.`
+            content: `당신은 암호화폐 전문 기술적 분석가(Technical Analyst)입니다.
+
+**전문 분야**:
+- 차트 패턴 분석 (지지선, 저항선, 추세선)
+- 기술적 지표 해석 (RSI, 이동평균, 거래량)
+- 가격 목표 산정 (피보나치, 지지/저항 레벨)
+
+**분석 원칙**:
+1. 제공된 기술적 지표(RSI, 추세, 지지선, 저항선)를 **반드시 활용**하여 분석
+2. 24시간 고가/저가, ATH 등 역사적 가격 데이터 고려
+3. 투자 가격대는 단순 퍼센트 계산이 아닌 **기술적 레벨**을 기준으로 설정
+4. 저항선은 매도 압력이 강한 구간, 지지선은 매수 세력이 강한 구간임을 고려
+5. RSI가 70 이상이면 과매수(조정 가능성), 30 이하면 과매도(반등 가능성)
+
+**답변 스타일**:
+- 한국어로 명확하고 구체적으로 설명
+- 투자 권유가 아닌 기술적 분석 의견
+- 암호화폐 변동성에 대한 리스크 명시
+- 한국 투자자 관점 반영`
           },
           {
             role: 'user',
@@ -126,18 +141,35 @@ TIME_HORIZON: [단기(1-7일)/중기(1-3개월)/장기(6개월+)]
 
 INVESTMENT_LEVELS:
 ENTRY: [현재가, 숫자만]
-TARGET1: [1차 목표가, 5-10% 수익, 숫자만]
-TARGET2: [2차 목표가, 15-25% 수익, 숫자만]
-TARGET3: [3차 목표가, 30-50% 수익, 숫자만]
-STOPLOSS: [손절가, 5-10% 손실, 숫자만]
-LEVELS_REASONING: [가격대 설정 근거, 1-2문장]
+TARGET1: [1차 목표가, 숫자만]
+TARGET2: [2차 목표가, 숫자만]
+TARGET3: [3차 목표가, 숫자만]
+STOPLOSS: [손절가, 숫자만]
+LEVELS_REASONING: [가격대 설정 근거, 2-3문장]
+
+**투자 가격대 설정 가이드**:
+- 현재가: $${data.price.toFixed(6)}
+- 24시간 최고가: $${data.high24h.toFixed(6)} (현재가 대비 ${((data.high24h / data.price - 1) * 100).toFixed(1)}%)
+- 24시간 최저가: $${data.low24h.toFixed(6)} (현재가 대비 ${((data.low24h / data.price - 1) * 100).toFixed(1)}%)
+- 저항선 (Resistance): $${data.technicalIndicators.resistance?.toFixed(6) || 'N/A'}
+- 지지선 (Support): $${data.technicalIndicators.support?.toFixed(6) || 'N/A'}
+- RSI: ${data.technicalIndicators.rsi?.toFixed(1) || 'N/A'} ${data.technicalIndicators.rsi ? (data.technicalIndicators.rsi > 70 ? '(과매수)' : data.technicalIndicators.rsi < 30 ? '(과매도)' : '(중립)') : ''}
+- 추세: ${data.technicalIndicators.trend}
+
+**가격대 산정 방법**:
+1. ENTRY: 현재가를 그대로 사용
+2. TARGET1: 저항선이나 24시간 최고가를 참고하여 첫 번째 돌파 목표 설정 (보수적)
+3. TARGET2: 기술적 패턴과 추세를 고려한 중기 목표 (저항선 돌파 후)
+4. TARGET3: 강세장 시나리오의 최대 목표 (ATH나 심리적 저항선 고려)
+5. STOPLOSS: 지지선이나 24시간 최저가를 참고하여 손실 제한선 설정 (지지선 하단)
 
 **중요**: 
 1. 암호화폐는 매우 변동성이 크므로 신중한 의견을 제시하세요.
 2. 투자 권유가 아닌 분석 의견임을 명확히 하세요.
 3. 리스크를 반드시 강조하세요.
 4. 한국 투자자 관점에서 설명하세요.
-5. 투자 가격대는 기술적 지표와 최근 추세를 고려하여 현실적으로 설정하세요.
+5. 투자 가격대는 **반드시 기술적 지표(저항선, 지지선, RSI, 24시간 고가/저가)를 분석**하여 설정하세요.
+6. 단순 퍼센트 계산이 아닌, 차트 패턴과 기술적 분석을 기반으로 현실적인 가격대를 제시하세요.
 `;
   }
 
