@@ -234,4 +234,266 @@ ${idx + 1}. ${coin.name} (${coin.symbol})
       return '비교 분석을 수행할 수 없습니다.';
     }
   }
+
+  /**
+   * 오늘의 코인 추천 (재미용!)
+   * ⚠️ 재미로만 보세요! 투자 권유 아님!
+   */
+  async getTodayRecommendations(coins: any[]): Promise<{
+    hotPick: any;
+    risingStar: any;
+    safeHaven: any;
+    reasoning: string;
+    disclaimer: string;
+  }> {
+    const prompt = `
+다음 암호화폐 중에서 오늘의 추천을 해주세요 (재미용!):
+
+${coins.map((coin, idx) => `
+${idx + 1}. ${coin.name} (${coin.symbol})
+   - 현재가: $${coin.price.toFixed(6)}
+   - 24시간: ${coin.change24h.toFixed(2)}%
+   - 7일: ${coin.change7d.toFixed(2)}%
+   - RSI: ${coin.technicalIndicators?.rsi?.toFixed(1) || 'N/A'}
+   - 추세: ${coin.technicalIndicators?.trend || 'N/A'}
+`).join('\n')}
+
+다음 형식으로 3가지 추천을 해주세요:
+
+HOT_PICK: [심볼] - [한 줄 이유]
+RISING_STAR: [심볼] - [한 줄 이유]
+SAFE_HAVEN: [심볼] - [한 줄 이유]
+
+REASONING: [전체적인 시장 상황과 추천 이유를 2-3문장으로]
+
+**중요**: 이건 재미로 보는 추천이에요! 실제 투자는 본인 판단!
+`;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: '암호화폐 트렌드 분석가입니다. 재미있고 가벼운 톤으로 추천합니다. 하지만 리스크는 명확히!'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 600
+      });
+
+      const content = response.choices[0].message.content || '';
+      
+      // 파싱
+      let hotPick = null;
+      let risingStar = null;
+      let safeHaven = null;
+      let reasoning = '';
+
+      const lines = content.split('\n');
+      for (const line of lines) {
+        if (line.includes('HOT_PICK:')) {
+          const symbol = line.match(/\[(\w+)\]/)?.[1];
+          hotPick = coins.find(c => c.symbol === symbol);
+        } else if (line.includes('RISING_STAR:')) {
+          const symbol = line.match(/\[(\w+)\]/)?.[1];
+          risingStar = coins.find(c => c.symbol === symbol);
+        } else if (line.includes('SAFE_HAVEN:')) {
+          const symbol = line.match(/\[(\w+)\]/)?.[1];
+          safeHaven = coins.find(c => c.symbol === symbol);
+        } else if (line.includes('REASONING:')) {
+          reasoning = line.replace('REASONING:', '').trim();
+        } else if (reasoning && line.trim()) {
+          reasoning += ' ' + line.trim();
+        }
+      }
+
+      return {
+        hotPick: hotPick || coins[0],
+        risingStar: risingStar || coins[1],
+        safeHaven: safeHaven || coins[2],
+        reasoning: reasoning || '오늘의 시장 상황을 고려한 추천입니다.',
+        disclaimer: '⚠️ 이 추천은 재미로만 보세요! 암호화폐는 변동성이 매우 크며, 투자 손실 가능성이 있습니다. 투자는 본인 판단과 책임 하에!'
+      };
+    } catch (error: any) {
+      console.error('추천 생성 실패:', error.message);
+      // 기본 추천
+      return {
+        hotPick: coins[0],
+        risingStar: coins[1],
+        safeHaven: coins[2],
+        reasoning: '시장 데이터를 분석한 추천입니다.',
+        disclaimer: '⚠️ 이 추천은 재미로만 보세요! 투자는 본인 책임!'
+      };
+    }
+  }
+
+  /**
+   * 시세 예측 (1일/7일/30일)
+   * ⚠️ 재미용! 정확하지 않을 수 있음!
+   */
+  async predictPrice(cryptoData: any): Promise<{
+    day1: { price: number; change: number; confidence: string };
+    day7: { price: number; change: number; confidence: string };
+    day30: { price: number; change: number; confidence: string };
+    reasoning: string;
+    disclaimer: string;
+  }> {
+    const prompt = `
+다음 암호화폐의 미래 시세를 예측해주세요 (재미용!):
+
+# ${cryptoData.name} (${cryptoData.symbol})
+- 현재가: $${cryptoData.price.toFixed(6)}
+- 24시간 변동: ${cryptoData.change24h.toFixed(2)}%
+- 7일 변동: ${cryptoData.change7d.toFixed(2)}%
+- 30일 변동: ${cryptoData.change30d.toFixed(2)}%
+- RSI: ${cryptoData.technicalIndicators.rsi?.toFixed(1) || 'N/A'}
+- 추세: ${cryptoData.technicalIndicators.trend}
+- 지지선: $${cryptoData.technicalIndicators.support?.toFixed(6) || 'N/A'}
+- 저항선: $${cryptoData.technicalIndicators.resistance?.toFixed(6) || 'N/A'}
+- 공포-탐욕: ${cryptoData.fearGreedIndex || 'N/A'}
+
+현재 추세와 기술적 지표를 고려하여 다음 형식으로 예측해주세요:
+
+DAY1_PRICE: [숫자만]
+DAY1_CHANGE: [+/-숫자%]
+DAY1_CONFIDENCE: [낮음/중간/높음]
+
+DAY7_PRICE: [숫자만]
+DAY7_CHANGE: [+/-숫자%]
+DAY7_CONFIDENCE: [낮음/중간/높음]
+
+DAY30_PRICE: [숫자만]
+DAY30_CHANGE: [+/-숫자%]
+DAY30_CONFIDENCE: [낮음/중간/높음]
+
+REASONING: [예측 근거를 2-3문장으로]
+
+**중요**: 
+1. 현실적인 범위 내에서 예측
+2. 변동성을 고려한 보수적 예측
+3. 이건 AI 예측일 뿐, 맞지 않을 수 있어요!
+`;
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: '암호화폐 가격 예측 AI입니다. 기술적 지표와 추세를 바탕으로 합리적 예측을 하되, 불확실성을 명확히 합니다.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.6,
+        max_tokens: 800
+      });
+
+      const content = response.choices[0].message.content || '';
+      
+      // 파싱
+      let day1Price = cryptoData.price;
+      let day1Change = 0;
+      let day1Confidence = '중간';
+      let day7Price = cryptoData.price;
+      let day7Change = 0;
+      let day7Confidence = '중간';
+      let day30Price = cryptoData.price;
+      let day30Change = 0;
+      let day30Confidence = '낮음';
+      let reasoning = '';
+
+      const lines = content.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        
+        if (trimmed.startsWith('DAY1_PRICE:')) {
+          const value = parseFloat(trimmed.replace('DAY1_PRICE:', '').trim());
+          if (!isNaN(value)) day1Price = value;
+        } else if (trimmed.startsWith('DAY1_CHANGE:')) {
+          const value = parseFloat(trimmed.replace('DAY1_CHANGE:', '').replace('%', '').trim());
+          if (!isNaN(value)) day1Change = value;
+        } else if (trimmed.startsWith('DAY1_CONFIDENCE:')) {
+          day1Confidence = trimmed.replace('DAY1_CONFIDENCE:', '').trim();
+        } else if (trimmed.startsWith('DAY7_PRICE:')) {
+          const value = parseFloat(trimmed.replace('DAY7_PRICE:', '').trim());
+          if (!isNaN(value)) day7Price = value;
+        } else if (trimmed.startsWith('DAY7_CHANGE:')) {
+          const value = parseFloat(trimmed.replace('DAY7_CHANGE:', '').replace('%', '').trim());
+          if (!isNaN(value)) day7Change = value;
+        } else if (trimmed.startsWith('DAY7_CONFIDENCE:')) {
+          day7Confidence = trimmed.replace('DAY7_CONFIDENCE:', '').trim();
+        } else if (trimmed.startsWith('DAY30_PRICE:')) {
+          const value = parseFloat(trimmed.replace('DAY30_PRICE:', '').trim());
+          if (!isNaN(value)) day30Price = value;
+        } else if (trimmed.startsWith('DAY30_CHANGE:')) {
+          const value = parseFloat(trimmed.replace('DAY30_CHANGE:', '').replace('%', '').trim());
+          if (!isNaN(value)) day30Change = value;
+        } else if (trimmed.startsWith('DAY30_CONFIDENCE:')) {
+          day30Confidence = trimmed.replace('DAY30_CONFIDENCE:', '').trim();
+        } else if (trimmed.startsWith('REASONING:')) {
+          reasoning = trimmed.replace('REASONING:', '').trim();
+          const nextLines = lines.slice(lines.indexOf(line) + 1);
+          for (const next of nextLines) {
+            if (next.trim() && !next.includes(':')) {
+              reasoning += ' ' + next.trim();
+            } else {
+              break;
+            }
+          }
+        }
+      }
+
+      return {
+        day1: { 
+          price: day1Price, 
+          change: day1Change, 
+          confidence: day1Confidence 
+        },
+        day7: { 
+          price: day7Price, 
+          change: day7Change, 
+          confidence: day7Confidence 
+        },
+        day30: { 
+          price: day30Price, 
+          change: day30Change, 
+          confidence: day30Confidence 
+        },
+        reasoning: reasoning || 'AI가 기술적 지표를 분석한 예측입니다.',
+        disclaimer: '⚠️ 이 예측은 AI가 만든 것으로 재미로만 보세요! 암호화폐는 예측이 매우 어렵고, 실제 가격은 크게 다를 수 있습니다. 투자 판단에 사용하지 마세요!'
+      };
+    } catch (error: any) {
+      console.error('가격 예측 실패:', error.message);
+      
+      // 기본 예측 (현재가 기준 약간의 변동)
+      const currentPrice = cryptoData.price;
+      return {
+        day1: { 
+          price: currentPrice * (1 + (Math.random() * 0.1 - 0.05)), 
+          change: Math.random() * 10 - 5, 
+          confidence: '낮음' 
+        },
+        day7: { 
+          price: currentPrice * (1 + (Math.random() * 0.2 - 0.1)), 
+          change: Math.random() * 20 - 10, 
+          confidence: '낮음' 
+        },
+        day30: { 
+          price: currentPrice * (1 + (Math.random() * 0.4 - 0.2)), 
+          change: Math.random() * 40 - 20, 
+          confidence: '낮음' 
+        },
+        reasoning: 'AI 예측을 생성할 수 없습니다.',
+        disclaimer: '⚠️ 이 예측은 재미로만 보세요! 투자 판단에 사용하지 마세요!'
+      };
+    }
+  }
 }

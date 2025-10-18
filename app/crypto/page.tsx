@@ -45,11 +45,31 @@ interface CryptoAnalysis {
   cachedAt?: string;
 }
 
+interface Recommendations {
+  hotPick: any;
+  risingStar: any;
+  safeHaven: any;
+  reasoning: string;
+  disclaimer: string;
+}
+
+interface Prediction {
+  day1: { price: number; change: number; confidence: string };
+  day7: { price: number; change: number; confidence: string };
+  day30: { price: number; change: number; confidence: string };
+  reasoning: string;
+  disclaimer: string;
+}
+
 export default function CryptoPage() {
   const [analysis, setAnalysis] = useState<CryptoAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchSymbol, setSearchSymbol] = useState('');
+  const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [showPrediction, setShowPrediction] = useState(false);
 
   // 인기 코인
   const popularCoins = [
@@ -67,6 +87,8 @@ export default function CryptoPage() {
     setLoading(true);
     setError(null);
     setAnalysis(null);
+    setPrediction(null);
+    setShowPrediction(false);
 
     try {
       const response = await fetch(`/api/crypto/${symbol}`);
@@ -81,6 +103,35 @@ export default function CryptoPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRecommendations = async () => {
+    setShowRecommendations(true);
+    if (recommendations) return; // 이미 로드됨
+
+    try {
+      const response = await fetch('/api/crypto/recommendations');
+      if (response.ok) {
+        const data = await response.json();
+        setRecommendations(data);
+      }
+    } catch (err) {
+      console.error('추천 로드 실패:', err);
+    }
+  };
+
+  const fetchPrediction = async (symbol: string) => {
+    setShowPrediction(true);
+    
+    try {
+      const response = await fetch(`/api/crypto/predict/${symbol}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPrediction(data.prediction);
+      }
+    } catch (err) {
+      console.error('예측 로드 실패:', err);
     }
   };
 
@@ -173,7 +224,114 @@ export default function CryptoPage() {
               ))}
             </div>
           </div>
+
+          {/* 재미 기능 버튼 */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-600 font-medium mb-3">🎲 재미로 보는 기능 (투자 권유 아님!)</p>
+            <div className="flex gap-3">
+              <button
+                onClick={fetchRecommendations}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-xl font-semibold transition-all shadow-lg"
+              >
+                🎯 오늘의 코인 추천
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* 오늘의 추천 (재미용!) */}
+        {showRecommendations && recommendations && (
+          <div className="bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 rounded-2xl shadow-xl p-6 sm:p-8 border-2 border-orange-200">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">🎯 오늘의 코인 추천</h3>
+              <p className="text-sm text-orange-600 font-semibold bg-orange-100 inline-block px-4 py-2 rounded-full">
+                ⚠️ 재미로만 보세요! 투자 권유 아님!
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4 mb-6">
+              {/* Hot Pick */}
+              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-red-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-3xl">🔥</span>
+                  <div>
+                    <p className="text-xs text-red-600 font-bold">HOT PICK</p>
+                    <p className="text-lg font-bold text-gray-800">{recommendations.hotPick.symbol}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700">{recommendations.hotPick.name}</p>
+                <p className="text-2xl font-bold text-red-600 mt-2">
+                  ${recommendations.hotPick.price.toFixed(4)}
+                </p>
+                <p className={`text-sm font-semibold mt-1 ${recommendations.hotPick.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {recommendations.hotPick.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.hotPick.change24h).toFixed(2)}%
+                </p>
+                <button
+                  onClick={() => handleSearch(recommendations.hotPick.symbol)}
+                  className="w-full mt-3 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium"
+                >
+                  상세 분석 보기
+                </button>
+              </div>
+
+              {/* Rising Star */}
+              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-yellow-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-3xl">⭐</span>
+                  <div>
+                    <p className="text-xs text-yellow-600 font-bold">RISING STAR</p>
+                    <p className="text-lg font-bold text-gray-800">{recommendations.risingStar.symbol}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700">{recommendations.risingStar.name}</p>
+                <p className="text-2xl font-bold text-yellow-600 mt-2">
+                  ${recommendations.risingStar.price.toFixed(4)}
+                </p>
+                <p className={`text-sm font-semibold mt-1 ${recommendations.risingStar.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {recommendations.risingStar.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.risingStar.change24h).toFixed(2)}%
+                </p>
+                <button
+                  onClick={() => handleSearch(recommendations.risingStar.symbol)}
+                  className="w-full mt-3 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-medium"
+                >
+                  상세 분석 보기
+                </button>
+              </div>
+
+              {/* Safe Haven */}
+              <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-blue-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-3xl">🛡️</span>
+                  <div>
+                    <p className="text-xs text-blue-600 font-bold">SAFE HAVEN</p>
+                    <p className="text-lg font-bold text-gray-800">{recommendations.safeHaven.symbol}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700">{recommendations.safeHaven.name}</p>
+                <p className="text-2xl font-bold text-blue-600 mt-2">
+                  ${recommendations.safeHaven.price.toFixed(4)}
+                </p>
+                <p className={`text-sm font-semibold mt-1 ${recommendations.safeHaven.change24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {recommendations.safeHaven.change24h >= 0 ? '▲' : '▼'} {Math.abs(recommendations.safeHaven.change24h).toFixed(2)}%
+                </p>
+                <button
+                  onClick={() => handleSearch(recommendations.safeHaven.symbol)}
+                  className="w-full mt-3 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium"
+                >
+                  상세 분석 보기
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5">
+              <p className="text-gray-700 leading-relaxed">{recommendations.reasoning}</p>
+              <p className="text-xs text-gray-500 mt-3 italic">{recommendations.disclaimer}</p>
+              <p className="text-xs text-gray-400 mt-2">
+                생성 시간: {new Date().toLocaleString('ko-KR')}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 로딩 */}
         {loading && (
@@ -260,7 +418,17 @@ export default function CryptoPage() {
 
             {/* AI 투자 의견 */}
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">🤖 AI 투자 분석</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-800">🤖 AI 투자 분석</h3>
+                {!showPrediction && (
+                  <button
+                    onClick={() => fetchPrediction(analysis.symbol)}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg text-sm font-semibold shadow-lg"
+                  >
+                    🔮 가격 예측 보기
+                  </button>
+                )}
+              </div>
               
               <div className="flex items-center gap-4 mb-6">
                 <div className={`px-6 py-3 rounded-xl font-bold text-lg ${getDecisionColor(analysis.recommendation.decision)}`}>
@@ -361,6 +529,74 @@ export default function CryptoPage() {
                 <p className="text-xs text-gray-500 mt-1">{analysis.athDate}</p>
               </div>
             </div>
+
+            {/* 가격 예측 (재미용!) */}
+            {showPrediction && prediction && (
+              <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 rounded-2xl shadow-xl p-6 sm:p-8 border-2 border-purple-300">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">🔮 AI 가격 예측</h3>
+                  <p className="text-sm text-purple-600 font-semibold bg-purple-100 inline-block px-4 py-2 rounded-full">
+                    ⚠️ 재미로만 보세요! 정확하지 않을 수 있어요!
+                  </p>
+                  <p className="text-xs text-gray-600 mt-2">
+                    현재가: ${analysis.price.toFixed(6)}
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                  {/* 1일 후 */}
+                  <div className="bg-white rounded-xl p-5 shadow-lg">
+                    <p className="text-sm text-gray-600 mb-2">📅 1일 후</p>
+                    <p className="text-3xl font-bold text-purple-600">
+                      ${prediction.day1.price.toFixed(6)}
+                    </p>
+                    <p className={`text-lg font-semibold mt-2 ${prediction.day1.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {prediction.day1.change >= 0 ? '▲' : '▼'} {Math.abs(prediction.day1.change).toFixed(2)}%
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      신뢰도: {prediction.day1.confidence}
+                    </p>
+                  </div>
+
+                  {/* 7일 후 */}
+                  <div className="bg-white rounded-xl p-5 shadow-lg">
+                    <p className="text-sm text-gray-600 mb-2">📅 7일 후</p>
+                    <p className="text-3xl font-bold text-blue-600">
+                      ${prediction.day7.price.toFixed(6)}
+                    </p>
+                    <p className={`text-lg font-semibold mt-2 ${prediction.day7.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {prediction.day7.change >= 0 ? '▲' : '▼'} {Math.abs(prediction.day7.change).toFixed(2)}%
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      신뢰도: {prediction.day7.confidence}
+                    </p>
+                  </div>
+
+                  {/* 30일 후 */}
+                  <div className="bg-white rounded-xl p-5 shadow-lg">
+                    <p className="text-sm text-gray-600 mb-2">📅 30일 후</p>
+                    <p className="text-3xl font-bold text-pink-600">
+                      ${prediction.day30.price.toFixed(6)}
+                    </p>
+                    <p className={`text-lg font-semibold mt-2 ${prediction.day30.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {prediction.day30.change >= 0 ? '▲' : '▼'} {Math.abs(prediction.day30.change).toFixed(2)}%
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      신뢰도: {prediction.day30.confidence}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-5">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">📝 예측 근거</p>
+                  <p className="text-gray-700 leading-relaxed">{prediction.reasoning}</p>
+                  <p className="text-xs text-gray-500 mt-4 italic">{prediction.disclaimer}</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    이 예측은 AI가 기술적 지표를 분석하여 생성한 것으로, 실제 가격과 큰 차이가 있을 수 있습니다.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* 기술적 지표 & 시장 심리 */}
             <div className="grid sm:grid-cols-2 gap-6">
