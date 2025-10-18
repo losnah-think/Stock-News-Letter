@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cache/warmup",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/check-filings",
-      "schedule": "0 9 * * 1-6"
+      "schedule": "0 10 * * 1-6"
     },
     {
       "path": "/api/keep-alive",
