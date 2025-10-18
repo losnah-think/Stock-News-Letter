@@ -191,7 +191,9 @@ export default function Home() {
             </div>
             <div className="flex gap-3 items-center">
               <a 
-                href="/crypto" 
+                href="https://crypto-news-letter.vercel.app" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
                 🪙 코인 분석
