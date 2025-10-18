@@ -24,7 +24,8 @@ export async function GET(
     // 🚀 캐시 확인
     const cachedData = await cacheService.getFullAnalysis(ticker);
     if (cachedData) {
-      console.log(`✅ Cache hit for ${ticker}`);
+      const cacheAge = Math.floor((Date.now() - new Date(cachedData.generatedAt).getTime()) / 1000 / 60);
+      console.log(`✅ [${ticker}] Cache hit (${cacheAge}분 경과)`);
       return NextResponse.json({
         ...cachedData,
         fromCache: true,
@@ -32,7 +33,7 @@ export async function GET(
       });
     }
 
-    console.log(`❌ Cache miss for ${ticker}, fetching fresh data...`);
+    console.log(`❌ [${ticker}] Cache miss - 새로운 분석 시작`);
 
     const secService = new SECDataService();
     const financialService = new FinancialDataService();
@@ -67,9 +68,9 @@ export async function GET(
       fromCache: false,
     };
 
-    // 💾 캐시 저장 (30분)
+    // 💾 캐시 저장 (3시간 TTL)
     await cacheService.setFullAnalysis(ticker, result);
-    console.log(`💾 Cached analysis for ${ticker}`);
+    console.log(`💾 [${ticker}] 캐시 저장 완료 (3시간 유효)`);
 
     return NextResponse.json(result);
   } catch (error) {

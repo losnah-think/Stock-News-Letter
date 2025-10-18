@@ -5,6 +5,10 @@
       "schedule": "0 */3 * * *"
     },
     {
+      "path": "/api/crypto-warmup",
+      "schedule": "0 */3 * * *"
+    },
+    {
       "path": "/api/check-filings",
       "schedule": "0 9 * * 1-6"
     },

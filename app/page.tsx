@@ -186,11 +186,19 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">SNL</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">📈 SNL</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">Stock News Letter - AI 기반 실시간 주식 분석</p>
             </div>
-            <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">
-              Powered by GPT-4
+            <div className="flex gap-3 items-center">
+              <a 
+                href="/crypto" 
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                🪙 코인 분석
+              </a>
+              <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">
+                Powered by GPT-4
+              </div>
             </div>
           </div>
         </div>

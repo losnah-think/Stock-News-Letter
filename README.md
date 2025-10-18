@@ -1,6 +1,8 @@
-# Stock Newsletter - AI # 📈 Stock Newsletter (SNL)
+# 📈 SNL & 🪙 CNL
 
-주식 공시 모니터링 및 AI 분석 자동화 시스템
+**Stock News Letter & Crypto News Letter**
+
+주식 + 암호화폐 AI 분석 자동화 시스템
 
 **3시간 캐### 3. 환경 변수 설정
 
@@ -87,6 +89,24 @@ CRON_SECRET=your-random-secret-key
 | 1000명 | $20.00 | $0.16 | **99.2%** 💰💰💰 |
 
 **📚 자세한 내용**: [CACHE_WARMUP.md](./CACHE_WARMUP.md)
+
+## 🪙 NEW! 암호화폐 분석 (CNL)
+
+아버지를 위한 코인 분석 시스템이 추가되었습니다!
+
+### 특징
+- **실시간 코인 가격**: USD + KRW 동시 표시
+- **공포-탐욕 지수**: 시장 심리 파악
+- **기술적 지표**: RSI, 추세, 지지/저항선
+- **AI 투자 분석**: 매수/보유/매도 의견
+- **6개 인기 코인 캐싱**: BTC, ETH, DOGE, XRP, SOL, ADA
+
+### 접속 방법
+```
+https://your-domain.vercel.app/crypto
+```
+
+**📚 상세 가이드**: [CRYPTO_README.md](./CRYPTO_README.md)
 
 ## 📋 요구사항
 
